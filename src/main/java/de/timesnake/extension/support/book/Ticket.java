@@ -1,7 +1,7 @@
 package de.timesnake.extension.support.book;
 
-import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.support.DbTicket;
+import de.timesnake.library.basic.util.Status;
 
 public class Ticket {
 

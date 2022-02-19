@@ -7,10 +7,10 @@ import de.timesnake.basic.bukkit.util.user.ExItemStack;
 import de.timesnake.basic.bukkit.util.user.User;
 import de.timesnake.basic.bukkit.util.user.event.*;
 import de.timesnake.database.util.Database;
-import de.timesnake.database.util.object.Status;
 import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.extension.support.chat.Plugin;
 import de.timesnake.extension.support.main.ExSupport;
+import de.timesnake.library.basic.util.Status;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.ArrayUtils;
@@ -141,9 +141,9 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         item.setDisplayName("§6ID: " + ticket.getId());
 
         if (showName) {
-            item.setLore("§fStatus: " + ticket.getStatus().getChatColor() + ticket.getStatus().getName(), "§fName: §7" + ticket.getName());
+            item.setLore("§fStatus: " + ticket.getStatus().getChatColor() + ticket.getStatus().getDisplayName(), "§fName: §7" + ticket.getName());
         } else {
-            item.setLore("§fStatus: §7" + ticket.getStatus().getName());
+            item.setLore("§fStatus: §7" + ticket.getStatus().getDisplayName());
         }
 
         BookMeta meta = ((BookMeta) item.getItemMeta());
@@ -425,7 +425,7 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         for (String line : lines) {
             if (line.toLowerCase().contains("[x]")) {
                 for (Status.Ticket s : Status.Ticket.values()) {
-                    if (line.contains(s.getName())) {
+                    if (line.contains(s.getDisplayName())) {
                         status = s;
                     }
                 }
@@ -444,9 +444,9 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
             msg.addExtra(status.getChatColor() + "[ ]");
 
             if (status.equals(ticketStatus)) {
-                msg.addExtra(" §l" + status.getName());
+                msg.addExtra(" §l" + status.getDisplayName());
             } else {
-                msg.addExtra(" " + status.getName());
+                msg.addExtra(" " + status.getDisplayName());
             }
             msg.addExtra("\n");
 

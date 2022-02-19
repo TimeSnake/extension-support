@@ -1,14 +1,17 @@
 package de.timesnake.extension.support.book;
 
 import de.timesnake.basic.bukkit.util.Server;
-import de.timesnake.channel.api.message.ChannelSupportMessage;
-import de.timesnake.channel.listener.ChannelSupportListener;
+import de.timesnake.channel.util.listener.ChannelHandler;
+import de.timesnake.channel.util.listener.ChannelListener;
+import de.timesnake.channel.util.listener.ListenerType;
+import de.timesnake.channel.util.message.ChannelSupportMessage;
+import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.extension.support.main.ExSupport;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class TicketManager implements ChannelSupportListener {
+public class TicketManager implements ChannelListener {
 
     private static TicketManager instance;
 
@@ -21,7 +24,7 @@ public class TicketManager implements ChannelSupportListener {
     public TicketManager() {
         instance = this;
 
-        Server.getChannel().addSupportListener(this);
+        Server.getChannel().addListener(this);
     }
 
     public boolean requestTicketLock(TicketInventory ticketInventory, Integer ticketId) {
@@ -30,7 +33,7 @@ public class TicketManager implements ChannelSupportListener {
             return false;
         }
 
-        Server.getChannel().sendMessage(ChannelSupportMessage.getTicketLockMessage(Server.getPort(), ticketId));
+        Server.getChannel().sendMessage(new ChannelSupportMessage<>(Server.getPort(), MessageType.Support.TICKET_LOCK, ticketId));
 
         this.ticketLocksInventoryByTicketId.put(ticketId, ticketInventory);
 
@@ -41,9 +44,9 @@ public class TicketManager implements ChannelSupportListener {
         return this.ticketLocksInventoryByTicketId.get(ticketId);
     }
 
-    @Override
-    public void onSupportMessage(ChannelSupportMessage msg) {
-        Integer id = Integer.parseInt(msg.getValue());
+    @ChannelHandler(type = ListenerType.SUPPORT)
+    public void onSupportMessage(ChannelSupportMessage<?> msg) {
+        Integer id = (Integer) msg.getValue();
 
         TicketInventory ticketInventory = this.ticketLocksInventoryByTicketId.remove(id);
 
@@ -51,18 +54,18 @@ public class TicketManager implements ChannelSupportListener {
             return;
         }
 
-        if (msg.getType().equals(ChannelSupportMessage.MessageType.REJECT)) {
+        if (msg.getMessageType().equals(MessageType.Support.REJECT)) {
             Server.runTaskSynchrony(() -> ticketInventory.rejectTicket(id), ExSupport.getPlugin());
-        } else if (msg.getType().equals(ChannelSupportMessage.MessageType.ACCEPT)) {
+        } else if (msg.getMessageType().equals(MessageType.Support.ACCEPT)) {
             Server.runTaskSynchrony(() -> ticketInventory.acceptTicket(id), ExSupport.getPlugin());
         }
     }
 
     public void saveTicket(Integer ticketId) {
-        Server.getChannel().sendMessage(ChannelSupportMessage.getTicketSubmitMessage(Server.getPort(), ticketId));
+        Server.getChannel().sendMessage(new ChannelSupportMessage<>(Server.getPort(), MessageType.Support.SUBMIT, ticketId));
     }
 
     public void broadcastTicketCreation(Integer ticketId) {
-        Server.getChannel().sendMessage(ChannelSupportMessage.getTicketCreationMessage(Server.getPort(), ticketId));
+        Server.getChannel().sendMessage(new ChannelSupportMessage<>(Server.getPort(), MessageType.Support.CREATION, ticketId));
     }
 }
