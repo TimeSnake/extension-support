@@ -26,7 +26,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class TicketInventory implements UserInventoryInteractListener, UserInventoryClickListener, InventoryHolder, Listener {
+public class TicketInventory implements UserInventoryInteractListener, UserInventoryClickListener, InventoryHolder,
+        Listener {
 
     public static final String ID = "§0§lID: §8";
     public static final String NAME = "§0§lName: §8";
@@ -35,29 +36,17 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
     public static final String ANSWER = "§0§lAnswer: §8\n";
 
     public static final Set<User> OPEN_TICKET_USERS = new HashSet<>();
-
-    public enum Type {
-        OWN, OPEN, ADMIN, ALL
-    }
-
-    private ExItemStack createTicket = new ExItemStack(0, Material.WRITABLE_BOOK, "§6Create Ticket").enchant();
-    ;
     private final ExItemStack ticketInv = new ExItemStack(1, Material.WRITTEN_BOOK, "§6Tickets");
-
     private final ExItemStack refresh = new ExItemStack(7, Material.ORANGE_DYE, "§cRefresh");
+    ;
     private final ExItemStack close = new ExItemStack(8, Material.RED_DYE, "§cClose");
-
     private final User user;
-    private ItemStack[] inventoryContents;
-
     private final Type type;
-
     private final ExInventory inventory;
-
     private final Map<Integer, DbTicket> ticketsByItemId = new HashMap<>();
-
     private final Map<Integer, Ticket> editedTicketsByTicketId = new HashMap<>();
-
+    private ExItemStack createTicket = new ExItemStack(0, Material.WRITABLE_BOOK, "§6Create Ticket").enchant();
+    private ItemStack[] inventoryContents;
     private boolean invalid = false;
 
     public TicketInventory(User user, Type type) {
@@ -107,6 +96,66 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         Server.registerListener(this, ExSupport.getPlugin());
     }
 
+    public static String getMessageFromBook(BookMeta meta) {
+        String message = meta.getPage(2);
+
+        List<String> list = new ArrayList<>(List.of(message.split("\n")));
+        list.remove(0);
+
+        return String.join("\n", list);
+    }
+
+    public static String getAnswerFromBook(BookMeta meta) {
+        String answer = meta.getPage(3);
+
+        List<String> list = new ArrayList<>(List.of(answer.split("\n")));
+        list.remove(0);
+
+        return String.join("\n", list);
+    }
+
+    public static Status.Ticket getStatusFromBook(BookMeta meta) {
+        String msg = meta.getPage(1);
+
+        String[] lines = msg.split("\n");
+
+        Status.Ticket status = null;
+
+        for (String line : lines) {
+            if (line.toLowerCase().contains("[x]")) {
+                for (Status.Ticket s : Status.Ticket.values()) {
+                    if (line.contains(s.getDisplayName())) {
+                        status = s;
+                    }
+                }
+            }
+        }
+
+        return status;
+    }
+
+    public static TextComponent[] createStatusButtons(Status.Ticket ticketStatus) {
+        TextComponent[] statuss = new TextComponent[Status.Ticket.values().length];
+
+        int i = 0;
+        for (Status.Ticket status : Status.Ticket.values()) {
+            TextComponent msg = new TextComponent();
+            msg.addExtra(status.getChatColor() + "[ ]");
+
+            if (status.equals(ticketStatus)) {
+                msg.addExtra(" §l" + status.getDisplayName());
+            } else {
+                msg.addExtra(" " + status.getDisplayName());
+            }
+            msg.addExtra("\n");
+
+            statuss[i] = msg;
+
+            i++;
+        }
+        return statuss;
+    }
+
     public void open() {
         OPEN_TICKET_USERS.add(user);
 
@@ -141,7 +190,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         item.setDisplayName("§6ID: " + ticket.getId());
 
         if (showName) {
-            item.setLore("§fStatus: " + ticket.getStatus().getChatColor() + ticket.getStatus().getDisplayName(), "§fName: §7" + ticket.getName());
+            item.setLore("§fStatus: " + ticket.getStatus().getChatColor() + ticket.getStatus().getDisplayName(),
+                    "§fName: §7" + ticket.getName());
         } else {
             item.setLore("§fStatus: §7" + ticket.getStatus().getDisplayName());
         }
@@ -152,7 +202,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
 
         List<BaseComponent[]> pages = new ArrayList<>();
 
-        BaseComponent[] info = new BaseComponent[]{new TextComponent(ID + ticket.getId() + "\n" + NAME + ticket.getName() + "\n\n\n")};
+        BaseComponent[] info =
+                new BaseComponent[]{new TextComponent(ID + ticket.getId() + "\n" + NAME + ticket.getName() + "\n\n\n")};
 
         pages.add((BaseComponent[]) ArrayUtils.addAll(info, createStatusButtons(ticket.getStatus())));
 
@@ -211,7 +262,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
 
     public void rejectTicket(Integer id) {
         this.user.closeInventory();
-        this.user.sendPluginMessage(Plugin.SUPPORT, ChatColor.WARNING + "This ticket is being edited " + "by another player. Try later again!");
+        this.user.sendPluginMessage(Plugin.SUPPORT, ChatColor.WARNING + "This ticket is being edited " + "by another " +
+                "player. Try later again!");
     }
 
     public void acceptTicket(Integer id) {
@@ -293,7 +345,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
 
         if (this.createTicket.equals(item)) {
             int id = this.createTicket(newMeta);
-            user.sendPluginMessage(Plugin.SUPPORT, ChatColor.PERSONAL + "Created ticket with id: " + ChatColor.VALUE + id);
+            user.sendPluginMessage(Plugin.SUPPORT,
+                    ChatColor.PERSONAL + "Created ticket with id: " + ChatColor.VALUE + id);
             this.setCreationBook();
             this.user.updateInventory();
             TicketManager.getInstance().broadcastTicketCreation(id);
@@ -311,14 +364,16 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
             return;
         }
 
-        Ticket editedTicket = new Ticket(ticket, ticket.getId(), ticket.getName(), ticket.getUuid(), ticket.getStatus(), ticket.getMessage(), ticket.getAnswer());
+        Ticket editedTicket = new Ticket(ticket, ticket.getId(), ticket.getName(), ticket.getUuid(),
+                ticket.getStatus(), ticket.getMessage(), ticket.getAnswer());
 
         if (user.hasPermission("support.status", 40, Plugin.SUPPORT)) {
             Status.Ticket status = getStatusFromBook(newMeta);
             if (status != null) {
                 if (status.equals(Status.Ticket.DELETE)) {
                     Database.getSupport().removeTicket(ticket.getId());
-                    this.user.sendPluginMessage(Plugin.SUPPORT, ChatColor.WARNING + "Deleted ticket " + ChatColor.VALUE + ticket.getId());
+                    this.user.sendPluginMessage(Plugin.SUPPORT,
+                            ChatColor.WARNING + "Deleted ticket " + ChatColor.VALUE + ticket.getId());
                     Server.runTaskLaterSynchrony(this::refresh, 1, ExSupport.getPlugin());
                     return;
                 } else {
@@ -328,7 +383,9 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
                 status = ticket.getStatus();
             }
 
-            BaseComponent[] info = new BaseComponent[]{new TextComponent(ID + ticket.getId() + "\n" + NAME + ticket.getName() + "\n\n\n")};
+            BaseComponent[] info =
+                    new BaseComponent[]{new TextComponent(ID + ticket.getId() + "\n" + NAME + ticket.getName() + "\n" +
+                            "\n\n")};
 
             meta.spigot().setPage(1, (BaseComponent[]) ArrayUtils.addAll(info, createStatusButtons(status)));
 
@@ -375,7 +432,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
     }
 
     private int createTicket(BookMeta meta) {
-        return Database.getSupport().addTicket(this.user.getUniqueId().toString(), this.user.getName(), meta.getPage(1)).getId();
+        return Database.getSupport().addTicket(this.user.getUniqueId().toString(), this.user.getName(),
+                meta.getPage(1)).getId();
     }
 
     private void setCreationBook() {
@@ -383,7 +441,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
 
         BookMeta meta = ((BookMeta) this.createTicket.getItemMeta());
 
-        meta.spigot().setPages(new BaseComponent[]{new TextComponent("Your message")}, new BaseComponent[]{new TextComponent("§cUse only the first page")});
+        meta.spigot().setPages(new BaseComponent[]{new TextComponent("Your message")},
+                new BaseComponent[]{new TextComponent("§cUse only the first page")});
 
         this.createTicket.setItemMeta(meta);
 
@@ -397,63 +456,10 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         return this.inventory.getInventory();
     }
 
-    public static String getMessageFromBook(BookMeta meta) {
-        String message = meta.getPage(2);
-
-        List<String> list = new ArrayList<>(List.of(message.split("\n")));
-        list.remove(0);
-
-        return String.join("\n", list);
-    }
-
-    public static String getAnswerFromBook(BookMeta meta) {
-        String answer = meta.getPage(3);
-
-        List<String> list = new ArrayList<>(List.of(answer.split("\n")));
-        list.remove(0);
-
-        return String.join("\n", list);
-    }
-
-    public static Status.Ticket getStatusFromBook(BookMeta meta) {
-        String msg = meta.getPage(1);
-
-        String[] lines = msg.split("\n");
-
-        Status.Ticket status = null;
-
-        for (String line : lines) {
-            if (line.toLowerCase().contains("[x]")) {
-                for (Status.Ticket s : Status.Ticket.values()) {
-                    if (line.contains(s.getDisplayName())) {
-                        status = s;
-                    }
-                }
-            }
-        }
-
-        return status;
-    }
-
-    public static TextComponent[] createStatusButtons(Status.Ticket ticketStatus) {
-        TextComponent[] statuss = new TextComponent[Status.Ticket.values().length];
-
-        int i = 0;
-        for (Status.Ticket status : Status.Ticket.values()) {
-            TextComponent msg = new TextComponent();
-            msg.addExtra(status.getChatColor() + "[ ]");
-
-            if (status.equals(ticketStatus)) {
-                msg.addExtra(" §l" + status.getDisplayName());
-            } else {
-                msg.addExtra(" " + status.getDisplayName());
-            }
-            msg.addExtra("\n");
-
-            statuss[i] = msg;
-
-            i++;
-        }
-        return statuss;
+    public enum Type {
+        OWN,
+        OPEN,
+        ADMIN,
+        ALL
     }
 }

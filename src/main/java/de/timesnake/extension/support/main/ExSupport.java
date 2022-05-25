@@ -12,17 +12,18 @@ public class ExSupport extends JavaPlugin {
 
     private static ExSupport plugin;
 
+    public static ExSupport getPlugin() {
+        return plugin;
+    }
+
     @Override
     public void onEnable() {
         plugin = this;
 
-        Server.getCommandManager().addCommand(this, "support", List.of("ticket", "tickets"), new SupportCmd(), Plugin.SUPPORT);
+        Server.getCommandManager().addCommand(this, "support", List.of("ticket", "tickets"), new SupportCmd(),
+                Plugin.SUPPORT);
 
 
         new TicketManager();
-    }
-
-    public static ExSupport getPlugin() {
-        return plugin;
     }
 }

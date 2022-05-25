@@ -14,7 +14,8 @@ public class Ticket {
     private String message;
     private String answer;
 
-    public Ticket(DbTicket database, Integer id, String name, String uuid, Status.Ticket status, String message, String answer) {
+    public Ticket(DbTicket database, Integer id, String name, String uuid, Status.Ticket status, String message,
+                  String answer) {
         this.database = database;
         this.id = id;
         this.name = name;
