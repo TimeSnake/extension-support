@@ -36,9 +36,71 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
     public static final String ANSWER = "§0§lAnswer: §8\n";
 
     public static final Set<User> OPEN_TICKET_USERS = new HashSet<>();
+
+    public static String getMessageFromBook(BookMeta meta) {
+        String message = meta.getPage(2);
+
+        List<String> list = new ArrayList<>(List.of(message.split("\n")));
+        list.remove(0);
+
+        return String.join("\n", list);
+    }
+
+    public static String getAnswerFromBook(BookMeta meta) {
+        String answer = meta.getPage(3);
+
+        List<String> list = new ArrayList<>(List.of(answer.split("\n")));
+        list.remove(0);
+
+        return String.join("\n", list);
+    }
+
+    ;
+
+    public static Status.Ticket getStatusFromBook(BookMeta meta) {
+        String msg = meta.getPage(1);
+
+        String[] lines = msg.split("\n");
+
+        Status.Ticket status = null;
+
+        for (String line : lines) {
+            if (line.toLowerCase().contains("[x]")) {
+                for (Status.Ticket s : Status.Ticket.values()) {
+                    if (line.contains(s.getDisplayName())) {
+                        status = s;
+                    }
+                }
+            }
+        }
+
+        return status;
+    }
+
+    public static TextComponent[] createStatusButtons(Status.Ticket ticketStatus) {
+        TextComponent[] statuss = new TextComponent[Status.Ticket.values().length];
+
+        int i = 0;
+        for (Status.Ticket status : Status.Ticket.values()) {
+            TextComponent msg = new TextComponent();
+            msg.addExtra(status.getChatColor() + "[ ]");
+
+            if (status.equals(ticketStatus)) {
+                msg.addExtra(" §l" + status.getDisplayName());
+            } else {
+                msg.addExtra(" " + status.getDisplayName());
+            }
+            msg.addExtra("\n");
+
+            statuss[i] = msg;
+
+            i++;
+        }
+        return statuss;
+    }
+
     private final ExItemStack ticketInv = new ExItemStack(1, Material.WRITTEN_BOOK, "§6Tickets");
     private final ExItemStack refresh = new ExItemStack(7, Material.ORANGE_DYE, "§cRefresh");
-    ;
     private final ExItemStack close = new ExItemStack(8, Material.RED_DYE, "§cClose");
     private final User user;
     private final Type type;
@@ -94,66 +156,6 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         Server.getInventoryEventManager().addInteractListener(this, createTicket, ticketInv, refresh, close);
         Server.getInventoryEventManager().addClickListener(this, this);
         Server.registerListener(this, ExSupport.getPlugin());
-    }
-
-    public static String getMessageFromBook(BookMeta meta) {
-        String message = meta.getPage(2);
-
-        List<String> list = new ArrayList<>(List.of(message.split("\n")));
-        list.remove(0);
-
-        return String.join("\n", list);
-    }
-
-    public static String getAnswerFromBook(BookMeta meta) {
-        String answer = meta.getPage(3);
-
-        List<String> list = new ArrayList<>(List.of(answer.split("\n")));
-        list.remove(0);
-
-        return String.join("\n", list);
-    }
-
-    public static Status.Ticket getStatusFromBook(BookMeta meta) {
-        String msg = meta.getPage(1);
-
-        String[] lines = msg.split("\n");
-
-        Status.Ticket status = null;
-
-        for (String line : lines) {
-            if (line.toLowerCase().contains("[x]")) {
-                for (Status.Ticket s : Status.Ticket.values()) {
-                    if (line.contains(s.getDisplayName())) {
-                        status = s;
-                    }
-                }
-            }
-        }
-
-        return status;
-    }
-
-    public static TextComponent[] createStatusButtons(Status.Ticket ticketStatus) {
-        TextComponent[] statuss = new TextComponent[Status.Ticket.values().length];
-
-        int i = 0;
-        for (Status.Ticket status : Status.Ticket.values()) {
-            TextComponent msg = new TextComponent();
-            msg.addExtra(status.getChatColor() + "[ ]");
-
-            if (status.equals(ticketStatus)) {
-                msg.addExtra(" §l" + status.getDisplayName());
-            } else {
-                msg.addExtra(" " + status.getDisplayName());
-            }
-            msg.addExtra("\n");
-
-            statuss[i] = msg;
-
-            i++;
-        }
-        return statuss;
     }
 
     public void open() {
@@ -279,7 +281,7 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         dbTicket.setMessage(ticket.getMessage());
         dbTicket.setAnswer(ticket.getAnswer());
 
-        this.user.sendPluginMessage(Plugin.SUPPORT, "Saved ticket");
+        this.user.sendPluginMessage(Plugin.SUPPORT, ChatColor.PERSONAL + "Saved ticket");
     }
 
     public void refresh() {
@@ -447,8 +449,6 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         this.createTicket.setItemMeta(meta);
 
         Server.getInventoryEventManager().addClickListener(this, this.createTicket);
-
-        this.user.setItem(this.createTicket);
     }
 
     @Override
