@@ -1,7 +1,6 @@
 package de.timesnake.extension.support.book;
 
 import de.timesnake.basic.bukkit.util.Server;
-import de.timesnake.basic.bukkit.util.chat.ChatColor;
 import de.timesnake.basic.bukkit.util.user.ExInventory;
 import de.timesnake.basic.bukkit.util.user.ExItemStack;
 import de.timesnake.basic.bukkit.util.user.User;
@@ -11,6 +10,8 @@ import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.extension.support.chat.Plugin;
 import de.timesnake.extension.support.main.ExSupport;
 import de.timesnake.library.basic.util.Status;
+import de.timesnake.library.basic.util.chat.ExTextColor;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.ArrayUtils;
@@ -245,7 +246,7 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         } else if (clickedItem.equals(ticketInv)) {
             user.openInventory(this.inventory);
         } else if (clickedItem.equals(refresh)) {
-            this.user.sendPluginMessage(Plugin.SUPPORT, ChatColor.PERSONAL + "Refreshed");
+            this.user.sendPluginMessage(Plugin.SUPPORT, Component.text("Refreshed", ExTextColor.PERSONAL));
             this.refresh();
         }
 
@@ -264,8 +265,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
 
     public void rejectTicket(Integer id) {
         this.user.closeInventory();
-        this.user.sendPluginMessage(Plugin.SUPPORT, ChatColor.WARNING + "This ticket is being edited " + "by another " +
-                "player. Try later again!");
+        this.user.sendPluginMessage(Plugin.SUPPORT, Component.text("This ticket is being edited " + "by another " +
+                "player. Try later again!", ExTextColor.WARNING));
     }
 
     public void acceptTicket(Integer id) {
@@ -281,7 +282,7 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         dbTicket.setMessage(ticket.getMessage());
         dbTicket.setAnswer(ticket.getAnswer());
 
-        this.user.sendPluginMessage(Plugin.SUPPORT, ChatColor.PERSONAL + "Saved ticket");
+        this.user.sendPluginMessage(Plugin.SUPPORT, Component.text("Saved ticket", ExTextColor.PERSONAL));
     }
 
     public void refresh() {
@@ -347,8 +348,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
 
         if (this.createTicket.equals(item)) {
             int id = this.createTicket(newMeta);
-            user.sendPluginMessage(Plugin.SUPPORT,
-                    ChatColor.PERSONAL + "Created ticket with id: " + ChatColor.VALUE + id);
+            user.sendPluginMessage(Plugin.SUPPORT, Component.text("Created ticket with id: ", ExTextColor.PERSONAL)
+                    .append(Component.text(id, ExTextColor.VALUE)));
             this.setCreationBook();
             this.user.updateInventory();
             TicketManager.getInstance().broadcastTicketCreation(id);
@@ -358,7 +359,7 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         DbTicket ticket = this.ticketsByItemId.get(item.getId());
 
         if (!TicketManager.getInstance().getTicketInventoryByTicketLock(ticket.getId()).equals(this)) {
-            this.user.sendPluginMessage(Plugin.SUPPORT, ChatColor.WARNING + "Ticket could not be saved");
+            this.user.sendPluginMessage(Plugin.SUPPORT, Component.text("Ticket could not be saved", ExTextColor.WARNING));
             return;
         }
 
@@ -374,8 +375,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
             if (status != null) {
                 if (status.equals(Status.Ticket.DELETE)) {
                     Database.getSupport().removeTicket(ticket.getId());
-                    this.user.sendPluginMessage(Plugin.SUPPORT,
-                            ChatColor.WARNING + "Deleted ticket " + ChatColor.VALUE + ticket.getId());
+                    this.user.sendPluginMessage(Plugin.SUPPORT, Component.text("Deleted ticket ", ExTextColor.PERSONAL)
+                            .append(Component.text(ticket.getId(), ExTextColor.VALUE)));
                     Server.runTaskLaterSynchrony(this::refresh, 1, ExSupport.getPlugin());
                     return;
                 } else {

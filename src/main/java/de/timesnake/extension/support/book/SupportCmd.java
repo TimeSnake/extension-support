@@ -1,12 +1,13 @@
 package de.timesnake.extension.support.book;
 
 import de.timesnake.basic.bukkit.util.chat.Argument;
-import de.timesnake.basic.bukkit.util.chat.ChatColor;
 import de.timesnake.basic.bukkit.util.chat.CommandListener;
 import de.timesnake.basic.bukkit.util.chat.Sender;
 import de.timesnake.basic.bukkit.util.user.User;
+import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
+import net.kyori.adventure.text.Component;
 
 import java.util.List;
 
@@ -34,20 +35,11 @@ public class SupportCmd implements CommandListener {
         }
 
         switch (args.getString(0).toLowerCase()) {
-            case "own":
-                new TicketInventory(user, TicketInventory.Type.OWN).open();
-                break;
-            case "all":
-                new TicketInventory(user, TicketInventory.Type.ALL).open();
-                break;
-            case "open":
-                new TicketInventory(user, TicketInventory.Type.OPEN).open();
-                break;
-            case "admin":
-                new TicketInventory(user, TicketInventory.Type.ADMIN).open();
-                break;
-            default:
-                sender.sendPluginMessage(ChatColor.WARNING + "Support type not found");
+            case "own" -> new TicketInventory(user, TicketInventory.Type.OWN).open();
+            case "all" -> new TicketInventory(user, TicketInventory.Type.ALL).open();
+            case "open" -> new TicketInventory(user, TicketInventory.Type.OPEN).open();
+            case "admin" -> new TicketInventory(user, TicketInventory.Type.ADMIN).open();
+            default -> sender.sendPluginMessage(Component.text("Support type not found", ExTextColor.WARNING));
         }
     }
 
