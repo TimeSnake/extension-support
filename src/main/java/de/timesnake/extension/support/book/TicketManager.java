@@ -13,6 +13,10 @@ import java.util.Map;
 
 public class TicketManager implements ChannelListener {
 
+    public static TicketManager getInstance() {
+        return instance;
+    }
+
     private static TicketManager instance;
     private final Map<Integer, TicketInventory> ticketLocksInventoryByTicketId = new HashMap<>();
 
@@ -22,17 +26,13 @@ public class TicketManager implements ChannelListener {
         Server.getChannel().addListener(this);
     }
 
-    public static TicketManager getInstance() {
-        return instance;
-    }
-
     public boolean requestTicketLock(TicketInventory ticketInventory, Integer ticketId) {
         TicketInventory invWithLoc = this.ticketLocksInventoryByTicketId.get(ticketId);
         if (invWithLoc != null && !invWithLoc.equals(ticketInventory)) {
             return false;
         }
 
-        Server.getChannel().sendMessage(new ChannelSupportMessage<>(Server.getPort(), MessageType.Support.TICKET_LOCK
+        Server.getChannel().sendMessage(new ChannelSupportMessage<>(Server.getName(), MessageType.Support.TICKET_LOCK
                 , ticketId));
 
         this.ticketLocksInventoryByTicketId.put(ticketId, ticketInventory);
@@ -62,12 +62,12 @@ public class TicketManager implements ChannelListener {
     }
 
     public void saveTicket(Integer ticketId) {
-        Server.getChannel().sendMessage(new ChannelSupportMessage<>(Server.getPort(), MessageType.Support.SUBMIT,
+        Server.getChannel().sendMessage(new ChannelSupportMessage<>(Server.getName(), MessageType.Support.SUBMIT,
                 ticketId));
     }
 
     public void broadcastTicketCreation(Integer ticketId) {
-        Server.getChannel().sendMessage(new ChannelSupportMessage<>(Server.getPort(), MessageType.Support.CREATION,
+        Server.getChannel().sendMessage(new ChannelSupportMessage<>(Server.getName(), MessageType.Support.CREATION,
                 ticketId));
     }
 }
