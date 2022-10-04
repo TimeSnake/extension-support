@@ -5,6 +5,8 @@ import de.timesnake.basic.bukkit.util.chat.CommandListener;
 import de.timesnake.basic.bukkit.util.chat.Sender;
 import de.timesnake.basic.bukkit.util.user.User;
 import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.extension.util.chat.Code;
+import de.timesnake.library.extension.util.chat.Plugin;
 import de.timesnake.library.extension.util.cmd.Arguments;
 import de.timesnake.library.extension.util.cmd.ExCommand;
 import net.kyori.adventure.text.Component;
@@ -12,6 +14,8 @@ import net.kyori.adventure.text.Component;
 import java.util.List;
 
 public class SupportCmd implements CommandListener {
+
+    private Code.Permission perm;
 
     @Override
     public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
@@ -26,7 +30,7 @@ public class SupportCmd implements CommandListener {
             return;
         }
 
-        if (!sender.hasPermission("support.open", 3)) {
+        if (!sender.hasPermission(this.perm)) {
             return;
         }
 
@@ -46,5 +50,10 @@ public class SupportCmd implements CommandListener {
     @Override
     public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd, Arguments<Argument> args) {
         return null;
+    }
+
+    @Override
+    public void loadCodes(Plugin plugin) {
+        this.perm = plugin.createPermssionCode("sup", "support.open");
     }
 }

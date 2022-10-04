@@ -11,6 +11,7 @@ import de.timesnake.extension.support.chat.Plugin;
 import de.timesnake.extension.support.main.ExSupport;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.extension.util.chat.Code;
 import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -112,9 +113,17 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
     private ItemStack[] inventoryContents;
     private boolean invalid = false;
 
+    private Code.Permission statusPerm;
+    private Code.Permission editPerm;
+    private Code.Permission answerPerm;
+
     public TicketInventory(User user, Type type) {
         this.user = user;
         this.type = type;
+
+        this.statusPerm = Plugin.SUPPORT.createPermssionCode("sup", "support.status");
+        this.editPerm = Plugin.SUPPORT.createPermssionCode("sup", "support.edit");
+        this.answerPerm = Plugin.SUPPORT.createPermssionCode("sup", "support.answer");
 
         this.setCreationBook();
 
@@ -370,7 +379,7 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         Ticket editedTicket = new Ticket(ticket, ticket.getId(), ticket.getName(), ticket.getUuid(),
                 ticket.getStatus(), ticket.getMessage(), ticket.getAnswer());
 
-        if (user.hasPermission("support.status", 40, Plugin.SUPPORT)) {
+        if (user.hasPermission(this.statusPerm, Plugin.SUPPORT)) {
             Status.Ticket status = getStatusFromBook(newMeta);
             if (status != null) {
                 if (status.equals(Status.Ticket.DELETE)) {
@@ -394,13 +403,13 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
 
         }
 
-        if (user.hasPermission("support.edit", 38, Plugin.SUPPORT)) {
+        if (user.hasPermission(this.editPerm, Plugin.SUPPORT)) {
             String message = getMessageFromBook(newMeta);
             editedTicket.setMessage(message);
             meta.spigot().setPage(2, new TextComponent(MESSAGE + message));
         }
 
-        if (user.hasPermission("support.answer", 39, Plugin.SUPPORT)) {
+        if (user.hasPermission(this.answerPerm, Plugin.SUPPORT)) {
             String answer = getAnswerFromBook(newMeta);
             editedTicket.setAnswer(answer);
             meta.spigot().setPage(3, new TextComponent(ANSWER + answer));
