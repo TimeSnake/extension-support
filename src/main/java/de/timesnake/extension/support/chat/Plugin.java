@@ -1,5 +1,5 @@
 /*
- * extension-support.main
+ * timesnake.extension-support.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -18,11 +18,16 @@
 
 package de.timesnake.extension.support.chat;
 
+import de.timesnake.library.basic.util.LogHelper;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Plugin extends de.timesnake.basic.bukkit.util.chat.Plugin {
 
-    public static final Plugin SUPPORT = new Plugin("Support", "EXS");
+    public static final Plugin SUPPORT = new Plugin("Support", "EXS", LogHelper.getLogger("support", Level.INFO));
 
-    protected Plugin(String name, String code) {
-        super(name, code);
+    protected Plugin(String name, String code, Logger logger) {
+        super(name, code, logger);
     }
 }
