@@ -1,5 +1,5 @@
 /*
- * extension-support.main
+ * workspace.extension-support.main
  * Copyright (C) 2022 timesnake
  *
  * This program is free software; you can redistribute it and/or
@@ -145,7 +145,7 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
 
         this.setCreationBook();
 
-        this.inventory = Server.createExInventory(9 * 6, "Tickets", this);
+        this.inventory = new ExInventory(9 * 6, Component.text("Tickets"), this);
 
         int slot = 0;
 
