@@ -8,7 +8,11 @@ import de.timesnake.basic.bukkit.util.Server;
 import de.timesnake.basic.bukkit.util.user.ExInventory;
 import de.timesnake.basic.bukkit.util.user.ExItemStack;
 import de.timesnake.basic.bukkit.util.user.User;
-import de.timesnake.basic.bukkit.util.user.event.*;
+import de.timesnake.basic.bukkit.util.user.event.UserDropItemEvent;
+import de.timesnake.basic.bukkit.util.user.event.UserInventoryClickEvent;
+import de.timesnake.basic.bukkit.util.user.event.UserInventoryClickListener;
+import de.timesnake.basic.bukkit.util.user.event.UserInventoryInteractEvent;
+import de.timesnake.basic.bukkit.util.user.event.UserInventoryInteractListener;
 import de.timesnake.database.util.Database;
 import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.extension.support.chat.Plugin;
@@ -16,6 +20,12 @@ import de.timesnake.extension.support.main.ExSupport;
 import de.timesnake.library.basic.util.Status;
 import de.timesnake.library.basic.util.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Code;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -30,9 +40,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
-
-public class TicketInventory implements UserInventoryInteractListener, UserInventoryClickListener, InventoryHolder,
+public class TicketInventory implements UserInventoryInteractListener, UserInventoryClickListener,
+        InventoryHolder,
         Listener {
 
     public static final String ID = "§0§lID: §8";
@@ -113,21 +122,22 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
     private final ExInventory inventory;
     private final Map<Integer, DbTicket> ticketsByItemId = new HashMap<>();
     private final Map<Integer, Ticket> editedTicketsByTicketId = new HashMap<>();
-    private ExItemStack createTicket = new ExItemStack(0, Material.WRITABLE_BOOK, "§6Create Ticket").enchant();
+    private ExItemStack createTicket = new ExItemStack(0, Material.WRITABLE_BOOK,
+            "§6Create Ticket").enchant();
     private ItemStack[] inventoryContents;
     private boolean invalid = false;
 
-    private Code.Permission statusPerm;
-    private Code.Permission editPerm;
-    private Code.Permission answerPerm;
+    private Code statusPerm;
+    private Code editPerm;
+    private Code answerPerm;
 
     public TicketInventory(User user, Type type) {
         this.user = user;
         this.type = type;
 
-        this.statusPerm = Plugin.SUPPORT.createPermssionCode("sup", "support.status");
-        this.editPerm = Plugin.SUPPORT.createPermssionCode("sup", "support.edit");
-        this.answerPerm = Plugin.SUPPORT.createPermssionCode("sup", "support.answer");
+        this.statusPerm = Plugin.SUPPORT.createPermssionCode("support.status");
+        this.editPerm = Plugin.SUPPORT.createPermssionCode("support.edit");
+        this.answerPerm = Plugin.SUPPORT.createPermssionCode("support.answer");
 
         this.setCreationBook();
 
@@ -138,7 +148,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         switch (type) {
             case OWN:
                 for (DbTicket ticket : Database.getSupport().getTickets(user.getUniqueId())) {
-                    this.inventory.setItemStack(slot, this.getBookByTicket(ticket.toLocal(), false).setSlot(slot));
+                    this.inventory.setItemStack(slot,
+                            this.getBookByTicket(ticket.toLocal(), false).setSlot(slot));
                     slot++;
                 }
                 break;
@@ -146,7 +157,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
             case OPEN:
                 for (Integer id : Database.getSupport().getTicketIds(Status.Ticket.OPEN)) {
                     DbTicket ticket = Database.getSupport().getTicket(id).toLocal();
-                    this.inventory.setItemStack(slot, this.getBookByTicket(ticket, true).setSlot(slot));
+                    this.inventory.setItemStack(slot,
+                            this.getBookByTicket(ticket, true).setSlot(slot));
                     slot++;
                 }
                 break;
@@ -154,20 +166,23 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
             case ADMIN:
                 for (Integer id : Database.getSupport().getTicketIds(Status.Ticket.ADMIN)) {
                     DbTicket ticket = Database.getSupport().getTicket(id).toLocal();
-                    this.inventory.setItemStack(slot, this.getBookByTicket(ticket, true).setSlot(slot));
+                    this.inventory.setItemStack(slot,
+                            this.getBookByTicket(ticket, true).setSlot(slot));
                     slot++;
                 }
                 break;
 
             case ALL:
                 for (DbTicket ticket : Database.getSupport().getTickets()) {
-                    this.inventory.setItemStack(slot, this.getBookByTicket(ticket.toLocal(), true).setSlot(slot));
+                    this.inventory.setItemStack(slot,
+                            this.getBookByTicket(ticket.toLocal(), true).setSlot(slot));
                     slot++;
                 }
                 break;
         }
 
-        Server.getInventoryEventManager().addInteractListener(this, createTicket, ticketInv, refresh, close);
+        Server.getInventoryEventManager()
+                .addInteractListener(this, createTicket, ticketInv, refresh, close);
         Server.getInventoryEventManager().addClickListener(this, this);
         Server.registerListener(this, ExSupport.getPlugin());
     }
@@ -206,7 +221,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         item.setDisplayName("§6ID: " + ticket.getId());
 
         if (showName) {
-            item.setLore("§fStatus: " + ticket.getStatus().getChatColor() + ticket.getStatus().getDisplayName(),
+            item.setLore("§fStatus: " + ticket.getStatus().getChatColor() + ticket.getStatus()
+                            .getDisplayName(),
                     "§fName: §7" + ticket.getName());
         } else {
             item.setLore("§fStatus: §7" + ticket.getStatus().getDisplayName());
@@ -219,9 +235,11 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         List<BaseComponent[]> pages = new ArrayList<>();
 
         BaseComponent[] info =
-                new BaseComponent[]{new TextComponent(ID + ticket.getId() + "\n" + NAME + ticket.getName() + "\n\n\n")};
+                new BaseComponent[]{new TextComponent(
+                        ID + ticket.getId() + "\n" + NAME + ticket.getName() + "\n\n\n")};
 
-        pages.add((BaseComponent[]) ArrayUtils.addAll(info, createStatusButtons(ticket.getStatus())));
+        pages.add(
+                (BaseComponent[]) ArrayUtils.addAll(info, createStatusButtons(ticket.getStatus())));
 
         pages.add(new BaseComponent[]{new TextComponent(MESSAGE + ticket.getMessage())});
 
@@ -259,7 +277,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         } else if (clickedItem.equals(ticketInv)) {
             user.openInventory(this.inventory);
         } else if (clickedItem.equals(refresh)) {
-            this.user.sendPluginMessage(Plugin.SUPPORT, Component.text("Refreshed", ExTextColor.PERSONAL));
+            this.user.sendPluginMessage(Plugin.SUPPORT,
+                    Component.text("Refreshed", ExTextColor.PERSONAL));
             this.refresh();
         }
 
@@ -267,7 +286,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
             DbTicket ticket = this.ticketsByItemId.get(clickedItem.getId());
 
             if (ticket != null) {
-                boolean success = TicketManager.getInstance().requestTicketLock(this, ticket.getId());
+                boolean success = TicketManager.getInstance()
+                        .requestTicketLock(this, ticket.getId());
 
                 if (!success) {
                     this.rejectTicket(ticket.getId());
@@ -278,8 +298,9 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
 
     public void rejectTicket(Integer id) {
         this.user.closeInventory();
-        this.user.sendPluginMessage(Plugin.SUPPORT, Component.text("This ticket is being edited " + "by another " +
-                "player. Try later again!", ExTextColor.WARNING));
+        this.user.sendPluginMessage(Plugin.SUPPORT,
+                Component.text("This ticket is being edited " + "by another " +
+                        "player. Try later again!", ExTextColor.WARNING));
     }
 
     public void acceptTicket(Integer id) {
@@ -295,7 +316,8 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         dbTicket.setMessage(ticket.getMessage());
         dbTicket.setAnswer(ticket.getAnswer());
 
-        this.user.sendPluginMessage(Plugin.SUPPORT, Component.text("Saved ticket", ExTextColor.PERSONAL));
+        this.user.sendPluginMessage(Plugin.SUPPORT,
+                Component.text("Saved ticket", ExTextColor.PERSONAL));
     }
 
     public void refresh() {
@@ -361,8 +383,9 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
 
         if (this.createTicket.equals(item)) {
             int id = this.createTicket(newMeta);
-            user.sendPluginMessage(Plugin.SUPPORT, Component.text("Created ticket with id: ", ExTextColor.PERSONAL)
-                    .append(Component.text(id, ExTextColor.VALUE)));
+            user.sendPluginMessage(Plugin.SUPPORT,
+                    Component.text("Created ticket with id: ", ExTextColor.PERSONAL)
+                            .append(Component.text(id, ExTextColor.VALUE)));
             this.setCreationBook();
             this.user.updateInventory();
             TicketManager.getInstance().broadcastTicketCreation(id);
@@ -371,8 +394,10 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
 
         DbTicket ticket = this.ticketsByItemId.get(item.getId());
 
-        if (!TicketManager.getInstance().getTicketInventoryByTicketLock(ticket.getId()).equals(this)) {
-            this.user.sendPluginMessage(Plugin.SUPPORT, Component.text("Ticket could not be saved", ExTextColor.WARNING));
+        if (!TicketManager.getInstance().getTicketInventoryByTicketLock(ticket.getId())
+                .equals(this)) {
+            this.user.sendPluginMessage(Plugin.SUPPORT,
+                    Component.text("Ticket could not be saved", ExTextColor.WARNING));
             return;
         }
 
@@ -388,8 +413,9 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
             if (status != null) {
                 if (status.equals(Status.Ticket.DELETE)) {
                     Database.getSupport().removeTicket(ticket.getId());
-                    this.user.sendPluginMessage(Plugin.SUPPORT, Component.text("Deleted ticket ", ExTextColor.PERSONAL)
-                            .append(Component.text(ticket.getId(), ExTextColor.VALUE)));
+                    this.user.sendPluginMessage(Plugin.SUPPORT,
+                            Component.text("Deleted ticket ", ExTextColor.PERSONAL)
+                                    .append(Component.text(ticket.getId(), ExTextColor.VALUE)));
                     Server.runTaskLaterSynchrony(this::refresh, 1, ExSupport.getPlugin());
                     return;
                 } else {
@@ -400,10 +426,12 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
             }
 
             BaseComponent[] info =
-                    new BaseComponent[]{new TextComponent(ID + ticket.getId() + "\n" + NAME + ticket.getName() + "\n" +
-                            "\n\n")};
+                    new BaseComponent[]{new TextComponent(
+                            ID + ticket.getId() + "\n" + NAME + ticket.getName() + "\n" +
+                                    "\n\n")};
 
-            meta.spigot().setPage(1, (BaseComponent[]) ArrayUtils.addAll(info, createStatusButtons(status)));
+            meta.spigot().setPage(1,
+                    (BaseComponent[]) ArrayUtils.addAll(info, createStatusButtons(status)));
 
         }
 
@@ -440,16 +468,19 @@ public class TicketInventory implements UserInventoryInteractListener, UserInven
         ItemStack item = e.getItemStack();
         ExItemStack exItem = new ExItemStack(item);
 
-        if (exItem.equals(createTicket) || exItem.equals(ticketInv) || exItem.equals(refresh) || exItem.equals(close)) {
+        if (exItem.equals(createTicket) || exItem.equals(ticketInv) || exItem.equals(refresh)
+                || exItem.equals(close)) {
             return;
         }
 
-        Server.runTaskLaterSynchrony(() -> e.getUser().getInventory().remove(item), 1, ExSupport.getPlugin());
+        Server.runTaskLaterSynchrony(() -> e.getUser().getInventory().remove(item), 1,
+                ExSupport.getPlugin());
     }
 
     private int createTicket(BookMeta meta) {
-        return Database.getSupport().addTicket(this.user.getUniqueId().toString(), this.user.getName(),
-                meta.getPage(1)).getId();
+        return Database.getSupport()
+                .addTicket(this.user.getUniqueId().toString(), this.user.getName(),
+                        meta.getPage(1)).getId();
     }
 
     private void setCreationBook() {
