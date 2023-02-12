@@ -18,7 +18,7 @@ import de.timesnake.database.util.support.DbTicket;
 import de.timesnake.extension.support.chat.Plugin;
 import de.timesnake.extension.support.main.ExSupport;
 import de.timesnake.library.basic.util.Status;
-import de.timesnake.library.basic.util.chat.ExTextColor;
+import de.timesnake.library.chat.ExTextColor;
 import de.timesnake.library.extension.util.chat.Code;
 import java.util.ArrayList;
 import java.util.HashMap;
