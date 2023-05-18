@@ -18,48 +18,48 @@ import net.kyori.adventure.text.Component;
 
 public class SupportCmd implements CommandListener {
 
-    private Code perm;
+  private Code perm;
 
-    @Override
-    public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        if (!sender.isPlayer(true)) {
-            return;
-        }
-
-        User user = sender.getUser();
-
-        if (args.isLengthEquals(0, false)) {
-            new TicketInventory(user, TicketInventory.Type.OWN).open();
-            return;
-        }
-
-        if (!sender.hasPermission(this.perm)) {
-            return;
-        }
-
-        if (!args.isLengthEquals(1, true)) {
-            return;
-        }
-
-        switch (args.getString(0).toLowerCase()) {
-            case "own" -> new TicketInventory(user, TicketInventory.Type.OWN).open();
-            case "all" -> new TicketInventory(user, TicketInventory.Type.ALL).open();
-            case "open" -> new TicketInventory(user, TicketInventory.Type.OPEN).open();
-            case "admin" -> new TicketInventory(user, TicketInventory.Type.ADMIN).open();
-            default -> sender.sendPluginMessage(
-                    Component.text("Support type not found", ExTextColor.WARNING));
-        }
+  @Override
+  public void onCommand(Sender sender, ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    if (!sender.isPlayer(true)) {
+      return;
     }
 
-    @Override
-    public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
-            Arguments<Argument> args) {
-        return null;
+    User user = sender.getUser();
+
+    if (args.isLengthEquals(0, false)) {
+      new TicketInventory(user, TicketInventory.Type.OWN).open();
+      return;
     }
 
-    @Override
-    public void loadCodes(Plugin plugin) {
-        this.perm = plugin.createPermssionCode("support.open");
+    if (!sender.hasPermission(this.perm)) {
+      return;
     }
+
+    if (!args.isLengthEquals(1, true)) {
+      return;
+    }
+
+    switch (args.getString(0).toLowerCase()) {
+      case "own" -> new TicketInventory(user, TicketInventory.Type.OWN).open();
+      case "all" -> new TicketInventory(user, TicketInventory.Type.ALL).open();
+      case "open" -> new TicketInventory(user, TicketInventory.Type.OPEN).open();
+      case "admin" -> new TicketInventory(user, TicketInventory.Type.ADMIN).open();
+      default -> sender.sendPluginMessage(
+          Component.text("Support type not found", ExTextColor.WARNING));
+    }
+  }
+
+  @Override
+  public List<String> getTabCompletion(ExCommand<Sender, Argument> cmd,
+      Arguments<Argument> args) {
+    return null;
+  }
+
+  @Override
+  public void loadCodes(Plugin plugin) {
+    this.perm = plugin.createPermssionCode("support.open");
+  }
 }
