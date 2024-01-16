@@ -9,8 +9,7 @@ plugins {
 }
 
 group = "de.timesnake"
-version = '0.2'
-archivesBaseName = 'extension-support'
+version = '0.3.0'
 var projectId = 38
 
 repositories {
@@ -30,18 +29,18 @@ repositories {
 }
 
 dependencies {
-  compileOnly "de.timesnake:basic-bukkit:3.1.2"
+  compileOnly "de.timesnake:basic-bukkit:3.+"
 
-  compileOnly "de.timesnake:database-bukkit:2.2.2"
-  compileOnly "de.timesnake:database-api:2.2.2"
+  compileOnly "de.timesnake:database-bukkit:2.+"
+  compileOnly "de.timesnake:database-api:2.+"
 
-  compileOnly "de.timesnake:channel-bukkit:3.0.6"
-  compileOnly "de.timesnake:channel-api:3.0.6"
+  compileOnly "de.timesnake:channel-bukkit:3.+"
+  compileOnly "de.timesnake:channel-api:3.+"
 
-  compileOnly "de.timesnake:library-commands:1.0"
-  compileOnly "de.timesnake:library-permissions:1.0"
-  compileOnly "de.timesnake:library-basic:1.2.2"
-  compileOnly "de.timesnake:library-chat:1.1"
+  compileOnly "de.timesnake:library-commands:1.+"
+  compileOnly "de.timesnake:library-permissions:1.+"
+  compileOnly "de.timesnake:library-basic:1.+"
+  compileOnly "de.timesnake:library-chat:1.+"
 
   paperweight.paperDevBundle("1.20.1-R0.1-SNAPSHOT")
 }

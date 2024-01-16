@@ -1,5 +1,5 @@
 main: de.timesnake.extension.support.main.ExSupport
-version: 0.2
+version: 0.3.0
 name: extension-support
 author: timesnake
 depend: [ basic-bukkit ]
