@@ -11,6 +11,7 @@ import de.timesnake.channel.util.listener.ListenerType;
 import de.timesnake.channel.util.message.ChannelSupportMessage;
 import de.timesnake.channel.util.message.MessageType;
 import de.timesnake.extension.support.main.ExSupport;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,7 +49,13 @@ public class TicketManager implements ChannelListener {
     return this.ticketLocksInventoryByTicketId.get(ticketId);
   }
 
-  @ChannelHandler(type = ListenerType.SUPPORT)
+  @ChannelHandler(type = {
+      ListenerType.SUPPORT_TICKET_LOCK,
+      ListenerType.SUPPORT_SUBMIT,
+      ListenerType.SUPPORT_REJECT,
+      ListenerType.SUPPORT_ACCEPT,
+      ListenerType.SUPPORT_CREATION,
+  })
   public void onSupportMessage(ChannelSupportMessage<?> msg) {
     Integer id = (Integer) msg.getValue();
 
